@@ -3,20 +3,45 @@
 	xmlns:composite="http://xmlns.jcp.org/jsf/composite"
 	xmlns:h="http://xmlns.jcp.org/jsf/html"
 	xmlns:f="http://xmlns.jcp.org/jsf/core"
+    xmlns:o="http://omnifaces.org/ui"
 	xmlns:x="http://myfaces.apache.org/tomahawk"
 	xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites"
 	xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
-	xmlns:p="http://primefaces.org/ui">
+	xmlns:p="http://primefaces.org/ui"
+    xmlns:jsf="http://xmlns.jcp.org/jsf">
 
 	<composite:interface>
 	</composite:interface>
 
 	<composite:implementation>
+          <style>
+            .progress {
+                border: 1px solid #368ee0;
+                padding-left:0;
+                padding-right:0;
+            }
+            .progress-bar {
+                height: 100%;
+                background-color: #368ee0;
+                margin-top: 0px;
+                line-height: 1.4;
+                box-shadow: none;
+            }
+            .dataTables_wrapper .dataTables_length {
+                line-height: 20px;
+            }
+            .resultNumber {
+                margin-left:20px;
+            }
+            .resultNumberMax {
+                margin-left: 50px;
+            }
+        </style>
 
 		<h:panelGroup>
 			<div class="row">
 				<div class="col-sm-12">
-					<div class="box box-color box-bordered lightgrey">
+					<div class="box box-color box-bordered orange">
 						<div class="box-title">
 							<h3>
 								<i class="fa fa-plug"></i>
@@ -24,7 +49,7 @@
 									value="#{msgs[AdministrationForm.administrationPlugin.title]}" />
 							</h3>
 						</div>
-						<div class="box-content">
+						<div class="box-content nopadding">
 
 							<h:panelGroup
 								rendered="#{!LoginForm.hasRole('Plugin_administration_restorearchivedimagefolders')}">
@@ -36,9 +61,30 @@
 							<h:panelGroup id="actionform" styleClass="col-sm-12"
 								rendered="#{LoginForm.hasRole('Plugin_administration_restorearchivedimagefolders')}">
 								<div class="row">
-									<h:form>
-										hello adminstration plugin: #{AdministrationForm.administrationPlugin.value}
-									</h:form>
+									 <h:form id="filterForm" styleClass="form-horizontal form-bordered">
+
+                                    <!-- Filter -->
+                                    <intranda:formInputText id="filter" name="filtername"
+                                        label="#{msgs.filter}"
+                                        field="#{AdministrationForm.administrationPlugin.filter}"
+                                        help="#{msgs.helpFilter}" fieldStyle="form-control"
+                                        required="false" />
+
+                                    <!-- Execute the plugin -->
+                                    <div class="form-actions">
+                                        <button jsf:id="cancel" class="btn margin-sides-10 font-size-s" 
+                                            jsf:action="#{AdministrationForm.administrationPlugin.cancel}"
+                                            jsf:rendered="#{AdministrationForm.administrationPlugin.run}">
+                                            <h:outputText value="#{msgs.abbrechen}" />
+                                        </button>
+                                    
+                                        <button class="btn btn-primary submitOnEnter pull-right font-size-s margin-bottom-most" 
+                                            jsf:id="filterButton"
+                                            type="submit" jsf:action="#{AdministrationForm.administrationPlugin.execute}">
+                                            <h:outputText value="#{msgs.executePlugin}" />
+                                        </button>
+                                    </div>
+                                </h:form>
 								</div>
 							</h:panelGroup>
 
@@ -46,7 +92,50 @@
 					</div>
 				</div>
 			</div>
+            <div class="row" jsf:rendered="#{AdministrationForm.administrationPlugin.restoreInfos.size() gt 0}">
+                <div class="col-sm-12">
+                    <div class="box box-color lightgrey box-bordered">
+                        <div class="box-title">
+                            <h3>
+                                <i class="fa fa-table"></i>
+                                <h:outputText
+                                    value="#{msgs.ergebnisse}" />
+                            </h3>
+                        </div>
+                        <div class="box-content nopadding">
+                            <h:form id="resultForm">
+                                <div class="dataTables_wrapper">
+                                    <table class="table table-hover table-nomargin dataTable table-bordered responsive"> 
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>imagesToRestore</th>
+                                                <th>imagesRestored</th>
+                                                <th>#{msgs.errors}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <ui:repeat var="result" value="#{AdministrationForm.administrationPlugin.restoreInfos}">
+                                                <tr>
+                                                    <td>#{result.processId}</td>
+                                                    <td>#{result.imagesToRestore}</td>
+                                                    <td>#{result.imagesRestored}</td>
+                                                    <td>#{result.errorMessage}</td>
+                                                </tr>
+                                            </ui:repeat>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </h:form>
+                        </div>
+                    </div>
+                </div>
+            </div>
 		</h:panelGroup>
+
+        <o:socket channel="adminPluginPush" scope="session">
+            <f:ajax event="update" render="resultForm" />
+        </o:socket>
 
 	</composite:implementation>
 </ui:composition>
