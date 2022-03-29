@@ -46,6 +46,16 @@ public class RestorearchivedimagefoldersAdministrationPlugin implements IAdminis
     private String filter;
 
     @Getter
+    @Setter
+    private int totalImagesToRestore;
+    @Getter
+    @Setter
+    private int totalImagesRestored;
+    @Getter
+    @Setter
+    private int percentDone;
+
+    @Getter
     private List<RestoreFolderInformation> restoreInfos = new ArrayList<RestoreFolderInformation>();
 
     @Getter
@@ -68,7 +78,7 @@ public class RestorearchivedimagefoldersAdministrationPlugin implements IAdminis
         log.info("Sample admnistration plugin started");
     }
 
-    public void execute() {
+    public void execute() throws ConfigurationException {
         String query = FilterHelper.criteriaBuilder(filter, false, null, null, null, true, false);
         List<Integer> tempProcesses = ProcessManager.getIDList(query);
 
@@ -76,10 +86,21 @@ public class RestorearchivedimagefoldersAdministrationPlugin implements IAdminis
                 .map(id -> new RestoreFolderInformation(id))
                 .collect(Collectors.toList());
 
+        for (RestoreFolderInformation restoreInfo : restoreInfos) {
+            List<Path> archiveInformationFiles = getArchiveInformationFilesForProcess(restoreInfo.getProcessId());
+            int numberOfImages = 0;
+            for (Path archiveInformationFile : archiveInformationFiles) {
+                XMLConfiguration xmlConf = new XMLConfiguration(archiveInformationFile.toFile());
+                numberOfImages += xmlConf.getInt("numberOfImages", 0);
+            }
+            totalImagesToRestore += numberOfImages;
+            restoreInfo.setImagesToRestore(numberOfImages);
+        }
+
         Runnable runnable = () -> {
             for (RestoreFolderInformation restoreInfo : restoreInfos) {
-                currentlyRestoring = restoreInfo;
                 List<Path> archiveInformationFiles = getArchiveInformationFilesForProcess(restoreInfo.getProcessId());
+                currentlyRestoring = restoreInfo;
                 for (Path archiveInformationFile : archiveInformationFiles) {
                     try {
                         restoreFolder(restoreInfo, archiveInformationFile);
@@ -94,6 +115,7 @@ public class RestorearchivedimagefoldersAdministrationPlugin implements IAdminis
                     }
                 }
             }
+            pusher.send("update");
         };
         new Thread(runnable).start();
     }
@@ -111,7 +133,10 @@ public class RestorearchivedimagefoldersAdministrationPlugin implements IAdminis
             for (RemoteResourceInfo remoteFile : remoteFiles) {
                 sftpClient.get(remoteFile.getPath(), localPath.resolve(remoteFile.getName()).toString());
                 info.setImagesRestored(info.getImagesRestored() + 1);
+                totalImagesRestored++;
+                percentDone = (int) (((double) totalImagesRestored / (double) totalImagesToRestore) * 100);
                 if (Instant.now().isAfter(lastPush.plus(500, ChronoUnit.MILLIS))) {
+                    lastPush = Instant.now();
                     pusher.send("update");
                 }
             }
