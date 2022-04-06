@@ -18,8 +18,8 @@ Detail                      | Description
 **Plugin identifier**       | intranda_administration_restorearchivedimagefolders
 **Plugin type**             | Administration Plugin
 **Licence**                 | GPL 2.0 or newer
-**Documentation (German)**  | - no documentation available - 
-**Documentation (English)** | - no documentation available -
+**Documentation (German)**  | https://docs.goobi.io/goobi-workflow-plugins-de/administration/intranda_administration_restorearchivedimagefolders
+**Documentation (English)** | https://docs.goobi.io/goobi-workflow-plugins-en/administration/intranda_administration_restorearchivedimagefolders
 
 
 Goobi details
