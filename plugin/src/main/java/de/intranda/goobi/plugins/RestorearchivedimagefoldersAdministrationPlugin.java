@@ -28,7 +28,7 @@ import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.sftp.RemoteResourceInfo;
 import net.schmizz.sshj.sftp.SFTPClient;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
-import net.schmizz.sshj.userauth.keyprovider.*;
+import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import net.xeoh.plugins.base.annotations.PluginImplementation;
 
 @PluginImplementation
@@ -57,7 +57,7 @@ public class RestorearchivedimagefoldersAdministrationPlugin implements IAdminis
     private int percentDone;
 
     @Getter
-    private List<RestoreFolderInformation> restoreInfos = new ArrayList<RestoreFolderInformation>();
+    private List<RestoreFolderInformation> restoreInfos = new ArrayList<>();
 
     @Getter
     private RestoreFolderInformation currentlyRestoring;
@@ -80,27 +80,27 @@ public class RestorearchivedimagefoldersAdministrationPlugin implements IAdminis
     }
 
     public void execute() throws ConfigurationException {
-//        log.info("Starting to excute.");
+        //        log.info("Starting to excute.");
         String query = FilterHelper.criteriaBuilder(filter, false, null, null, null, true, false);
-        List<Integer> tempProcesses = ProcessManager.getIDList(query);
+        List<Integer> tempProcesses = ProcessManager.getIdsForFilter(query);
 
         restoreInfos = tempProcesses.stream()
                 .map(id -> new RestoreFolderInformation(id))
                 .collect(Collectors.toList());
-//        log.info("The length of restoreInfos is :" + restoreInfos.size());
+        //        log.info("The length of restoreInfos is :" + restoreInfos.size());
         for (RestoreFolderInformation restoreInfo : restoreInfos) {
             List<Path> archiveInformationFiles = getArchiveInformationFilesForProcess(restoreInfo.getProcessId());
-//            log.info("The length of archiveInformationFiles is :" + archiveInformationFiles.size());
+            //            log.info("The length of archiveInformationFiles is :" + archiveInformationFiles.size());
             int numberOfImages = 0;
             for (Path archiveInformationFile : archiveInformationFiles) {
                 XMLConfiguration xmlConf = new XMLConfiguration(archiveInformationFile.toFile());
                 numberOfImages += xmlConf.getInt("numberOfImages", 0);
-//                log.info("numberOfImages is :" + numberOfImages);
+                //                log.info("numberOfImages is :" + numberOfImages);
             }
             totalImagesToRestore += numberOfImages;
             restoreInfo.setImagesToRestore(numberOfImages);
         }
-//        log.info("The number of images to restore is :" + totalImagesToRestore);
+        //        log.info("The number of images to restore is :" + totalImagesToRestore);
         Runnable runnable = () -> {
             for (RestoreFolderInformation restoreInfo : restoreInfos) {
                 List<Path> archiveInformationFiles = getArchiveInformationFilesForProcess(restoreInfo.getProcessId());
@@ -155,20 +155,20 @@ public class RestorearchivedimagefoldersAdministrationPlugin implements IAdminis
     }
 
     private SSHClient createSSHClient(XMLConfiguration xmlConf) throws IOException {
-          SSHClient client = new SSHClient();
-          client.addHostKeyVerifier(new PromiscuousVerifier());
-        try {          
+        SSHClient client = new SSHClient();
+        client.addHostKeyVerifier(new PromiscuousVerifier());
+        try {
             log.info("Start to connect");
             client.connect(xmlConf.getString("host"));
-//            log.info("host is :" + xmlConf.getString("host"));
-//            client.authPublickey(xmlConf.getString("user"));
+            //            log.info("host is :" + xmlConf.getString("host"));
+            //            client.authPublickey(xmlConf.getString("user"));
             KeyProvider kp = client.loadKeys(xmlConf.getString("privateKeyLocation"), xmlConf.getString("privateKeyPassphrase"));
             client.authPublickey(xmlConf.getString("user"), kp);
-       } catch (net.schmizz.sshj.userauth.UserAuthException e) {
+        } catch (net.schmizz.sshj.userauth.UserAuthException e) {
             log.error(e);
-       }
+        }
         return client;
-   }
+    }
 
     private List<Path> getArchiveInformationFilesForProcess(Integer processId) {
         Path imagesPath = Paths.get(ConfigurationHelper.getInstance().getGoobiFolder(), "metadata", processId.toString(), "images");
@@ -177,7 +177,7 @@ public class RestorearchivedimagefoldersAdministrationPlugin implements IAdminis
                     .collect(Collectors.toList());
         } catch (IOException e) {
             log.error(e);
-            return new ArrayList<Path>();
+            return new ArrayList<>();
         }
     }
 
