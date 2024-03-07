@@ -7,7 +7,7 @@
     <relativePath />
   </parent>
   <groupId>io.goobi.workflow.plugin</groupId>
-  <artifactId>plugin-administration-restorearchivedimagefolders</artifactId>
+  <artifactId>plugin-administration-restore-archived-image-folders</artifactId>
   <packaging>pom</packaging>
   <modules>
     <module>module-base</module>
