@@ -26,11 +26,5 @@
       <version>${project.version}</version>
       <classifier>classes</classifier>
     </dependency>
-    <dependency>
-      <groupId>net.schmizz</groupId>
-      <artifactId>sshj</artifactId>
-      <version>0.10.0</version>
-      <scope>provided</scope>
-    </dependency>
   </dependencies>
 </project>
