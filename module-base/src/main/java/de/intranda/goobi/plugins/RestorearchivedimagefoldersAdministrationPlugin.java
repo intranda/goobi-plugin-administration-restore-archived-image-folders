@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.configuration.XMLConfiguration;
+import org.apache.commons.lang3.StringUtils;
 import org.goobi.production.enums.PluginType;
 import org.goobi.production.flow.statistics.hibernate.FilterHelper;
 import org.goobi.production.plugin.interfaces.IAdministrationPlugin;
@@ -21,6 +22,7 @@ import org.omnifaces.cdi.PushContext;
 
 import de.sub.goobi.config.ConfigurationHelper;
 import de.sub.goobi.persistence.managers.ProcessManager;
+import io.goobi.extension.S3ClientHelper;
 import io.goobi.workflow.api.connection.SftpUtils;
 import lombok.Getter;
 import lombok.Setter;
@@ -114,11 +116,63 @@ public class RestorearchivedimagefoldersAdministrationPlugin implements IAdminis
     private void restoreFolder(RestoreFolderInformation info, Path archiveInformationFile) throws ConfigurationException, IOException {
         Instant lastPush = Instant.now();
         XMLConfiguration xmlConf = new XMLConfiguration(archiveInformationFile.toFile());
+
+        String protocol = xmlConf.getString("name");
+        if ("s3".equalsIgnoreCase(protocol)) {
+            downloadWithS3(info, archiveInformationFile, lastPush, xmlConf);
+        } else {
+            downloadWithSSH(info, archiveInformationFile, lastPush, xmlConf);
+        }
+    }
+
+    private void downloadWithS3(RestoreFolderInformation info, Path archiveInformationFile, Instant lastPush, XMLConfiguration xmlConf)
+            throws IOException {
+        try (S3ClientHelper s3client =
+                new S3ClientHelper(xmlConf.getString("S3Endpoint"), xmlConf.getString("S3AccessKeyID"), xmlConf.getString("S3SecretAccessKey"))) {
+            String bucket = xmlConf.getString("S3Bucket");
+            String prefix = xmlConf.getString("S3Prefix", "");
+            if (StringUtils.isNotBlank(prefix)) {
+                if (!prefix.endsWith("/")) {
+                    prefix = prefix + "/";
+                }
+            } else {
+                prefix = "";
+            }
+            Path remotePath =
+                    Paths.get(Integer.toString(info.getProcessId()), "images",
+                            archiveInformationFile.getFileName().toString().replace(".xml", ""));
+            String s3prefix = prefix + remotePath.toString();
+            Path localPath = Paths.get(ConfigurationHelper.getInstance().getGoobiFolder(), "metadata").resolve(remotePath);
+            Files.createDirectories(localPath);
+
+            List<String> remoteFiles = s3client.getContentList(bucket, s3prefix);
+
+            for (String remoteFile : remoteFiles) {
+                s3client.downloadSingleFile(bucket, s3prefix, Paths.get(remoteFile).getFileName().toString(), localPath);
+                info.setImagesRestored(info.getImagesRestored() + 1);
+                totalImagesRestored++;
+                percentDone = (int) (((double) totalImagesRestored / (double) totalImagesToRestore) * 100);
+                if (Instant.now().isAfter(lastPush.plus(500, ChronoUnit.MILLIS))) {
+                    lastPush = Instant.now();
+                    pusher.send("update");
+                }
+            }
+            s3client.deleteAllFilesInPrefix(bucket, s3prefix);
+
+        } catch (Exception e) {
+            log.error(e);
+        }
+    }
+
+    private void downloadWithSSH(RestoreFolderInformation info, Path archiveInformationFile, Instant lastPush, XMLConfiguration xmlConf)
+            throws IOException {
         try (SftpUtils sftpClient = new SftpUtils(xmlConf.getString("user"), xmlConf.getString("privateKeyLocation"),
-                xmlConf.getString("privateKeyPassphrase"), xmlConf.getString("host"), xmlConf.getInt("port"), xmlConf.getString("knownHostsFile"))) {
+                xmlConf.getString("privateKeyPassphrase"), xmlConf.getString("host"), xmlConf.getInt("port"),
+                xmlConf.getString("knownHostsFile"))) {
 
             Path remotePath =
-                    Paths.get(Integer.toString(info.getProcessId()), "images", archiveInformationFile.getFileName().toString().replace(".xml", ""));
+                    Paths.get(Integer.toString(info.getProcessId()), "images",
+                            archiveInformationFile.getFileName().toString().replace(".xml", ""));
             Path localPath = Paths.get(ConfigurationHelper.getInstance().getGoobiFolder(), "metadata").resolve(remotePath);
             Files.createDirectories(localPath);
 
