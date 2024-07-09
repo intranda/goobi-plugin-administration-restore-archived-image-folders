@@ -5,145 +5,104 @@
 	xmlns:f="http://xmlns.jcp.org/jsf/core"
     xmlns:o="http://omnifaces.org/ui"
 	xmlns:x="http://myfaces.apache.org/tomahawk"
-	xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites"
+	xmlns:intranda="http://xmlns.jcp.org/jsf/composite/compositesPG"
 	xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
 	xmlns:p="http://primefaces.org/ui"
     xmlns:jsf="http://xmlns.jcp.org/jsf">
-
 	<composite:interface>
 	</composite:interface>
-
 	<composite:implementation>
-          <style>
-            .progress {
-                border: 1px solid #368ee0;
-                margin: 10px 5px 10px 5px;
-            }
-            .progress-bar {
-                height: 100%;
-                background-color: #368ee0;
-                margin-top: 0px;
-                line-height: 1.4;
-                box-shadow: none;
-            }
-            .dataTables_wrapper .dataTables_length {
-                line-height: 20px;
-            }
-            .resultNumber {
-                margin-left:20px;
-            }
-            .resultNumberMax {
-                margin-left: 50px;
-            }
-        </style>
-
 		<h:panelGroup>
-			<div class="row">
-				<div class="col-sm-12">
-					<div class="box box-color box-bordered orange">
-						<div class="box-title">
-							<h3>
-								<i class="fa fa-plug"></i>
-								<h:outputText
-									value="#{msgs[AdministrationForm.administrationPlugin.title]}" />
-							</h3>
-						</div>
-						<div class="box-content nopadding">
-
-							<h:panelGroup
-								rendered="#{!LoginForm.hasRole('Plugin_administration_restorearchivedimagefolders')}">
-								<h:outputText
-									styleClass="alert alert-danger alert-dismissable margin-bottom-10 margin-top-10"
-									value="#{msgs.plugin_administration_missingPermission} Plugin_administration_restorearchivedimagefolders"></h:outputText>
-							</h:panelGroup>
-
-							<h:panelGroup id="actionform" styleClass="col-sm-12"
-								rendered="#{LoginForm.hasRole('Plugin_administration_restorearchivedimagefolders')}">
-								<div class="row">
-									 <h:form id="filterForm" styleClass="form-horizontal form-bordered">
-
-                                    <!-- Filter -->
-                                    <intranda:formInputText id="filter" name="filtername"
-                                        label="#{msgs.filter}"
-                                        field="#{AdministrationForm.administrationPlugin.filter}"
-                                        help="#{msgs.helpFilter}" fieldStyle="form-control"
-                                        required="false" />
-
-                                    <!-- Execute the plugin -->
-                                    <div class="form-actions">
-                                        <button jsf:id="cancel" class="btn margin-sides-10 font-size-s" 
-                                            jsf:action="#{AdministrationForm.administrationPlugin.cancel}"
-                                            jsf:rendered="#{AdministrationForm.administrationPlugin.run}">
-                                            <h:outputText value="#{msgs.abbrechen}" />
-                                        </button>
-                                    
-                                        <button class="btn btn-primary submitOnEnter pull-right font-size-s margin-bottom-most" 
-                                            jsf:id="filterButton"
-                                            type="submit" jsf:action="#{AdministrationForm.administrationPlugin.execute}">
-                                            <h:outputText value="#{msgs.executePlugin}" />
-                                        </button>
-                                    </div>
-                                </h:form>
-								</div>
-							</h:panelGroup>
-
-						</div>
-					</div>
-				</div>
-			</div>
-            <div class="row" jsf:rendered="#{AdministrationForm.administrationPlugin.restoreInfos.size() gt 0}">
-                <div class="col-sm-12">
-                    <div class="box box-color lightgrey box-bordered">
-                        <div class="box-title">
-                            <h3>
-                                <i class="fa fa-table"></i>
-                                <h:outputText
-                                    value="#{msgs.ergebnisse}" />
-                            </h3>
+            <h:panelGroup
+                display="block"
+                rendered="#{!LoginForm.hasRole('Plugin_administration_restorearchivedimagefolders')}"
+                styleClass="color-box bg-hot text-white d-flex flex-row p-3">
+                <h:outputText
+                    styleClass="fw-bold"
+                    value="#{msgs.plugin_administration_missingPermission} Plugin_administration_restorearchivedimagefolders"></h:outputText>
+            </h:panelGroup>
+            <intranda:box
+                boxType="action"
+                boxPadding="false"
+                boxForm="true"
+                icon="fa fa-plug"
+                title="#{msgs[AdministrationForm.administrationPlugin.title]}"
+                rendered="#{LoginForm.hasRole('Plugin_administration_restorearchivedimagefolders')}">
+                <h:panelGroup id="actionform">
+                    <h:form id="filterForm">
+                        <!-- Filter -->
+                        <intranda:formInputText id="filter" name="filtername"
+                            label="#{msgs.filter}"
+                            field="#{AdministrationForm.administrationPlugin.filter}"
+                            help="#{msgs.helpFilter}" fieldStyle="form-control"
+                            required="false" />
+                        <!-- Execute the plugin -->
+                        <div class="box__actions">
+                            <button
+                                jsf:id="cancel"
+                                class="btn btn-blank"
+                                jsf:action="#{AdministrationForm.administrationPlugin.cancel}"
+                                jsf:rendered="#{AdministrationForm.administrationPlugin.run}">
+                                <h:outputText value="#{msgs.abbrechen}" />
+                            </button>
+                            <button
+                                class="btn btn-action submitOnEnter"
+                                jsf:id="filterButton"
+                                type="submit" jsf:action="#{AdministrationForm.administrationPlugin.execute}">
+                                <h:outputText value="#{msgs.executePlugin}" />
+                            </button>
                         </div>
-                        <div class="box-content nopadding">
-                            <h:form id="resultForm">
-                            <div class="row">
-                            <div class="col-sm-12">
-                                <div class="progress">
-                                  <div class="progress-bar" role="progressbar" aria-valuenow="#{AdministrationForm.administrationPlugin.totalImagesRestored}" aria-valuemin="0" aria-valuemax="#{AdministrationForm.administrationPlugin.totalImagesToRestore}" style="width: #{AdministrationForm.administrationPlugin.percentDone}%;">
-                                    <span class="">#{AdministrationForm.administrationPlugin.percentDone}% Complete</span>
-                                  </div>
-                                </div>
-                                </div>
-                                </div>
-                                <div class="dataTables_wrapper">
-                                    <table class="table table-hover table-nomargin dataTable table-bordered responsive"> 
-                                        <thead>
-                                            <tr>
-                                                <th>ID</th>
-                                                <th>#{msgs.plugin_restorearchivedimages_imagesToRestore}</th>
-                                                <th>#{msgs.plugin_restorearchivedimages_imagesRestored}</th>
-                                                <th>#{msgs.errors}</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <ui:repeat var="result" value="#{AdministrationForm.administrationPlugin.restoreInfos}">
-                                                <tr>
-                                                    <td>#{result.processId}</td>
-                                                    <td>#{result.imagesToRestore}</td>
-                                                    <td>#{result.imagesRestored}</td>
-                                                    <td>#{result.errorMessage}</td>
-                                                </tr>
-                                            </ui:repeat>
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </h:form>
+                    </h:form>
+                </h:panelGroup>
+            </intranda:box>
+            <intranda:box
+                boxClass="mt-3"
+                boxType="neutral"
+                boxPadding="false"
+                boxForm="true"
+                icon="fa fa-table"
+                id="resultBox"
+                rendered="#{AdministrationForm.administrationPlugin.restoreInfos.size() gt 0}"
+                title="#{msgs.results}">
+                <h:form id="resultForm">
+                    <div class="progress m-3">
+                        <div
+                            class="progress-bar"
+                            role="progressbar"
+                            aria-valuenow="#{AdministrationForm.administrationPlugin.totalImagesRestored}"
+                            aria-valuemin="0"
+                            aria-valuemax="#{AdministrationForm.administrationPlugin.totalImagesToRestore}"
+                            style="--progress: #{AdministrationForm.administrationPlugin.percentDone}%;">
+                            <span>#{AdministrationForm.administrationPlugin.percentDone}% Complete</span>
                         </div>
                     </div>
-                </div>
-            </div>
+                    <div class="gw-table">
+                        <table class="table table-hover table-bordered table-responsive">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>#{msgs.plugin_restorearchivedimages_imagesToRestore}</th>
+                                    <th>#{msgs.plugin_restorearchivedimages_imagesRestored}</th>
+                                    <th>#{msgs.errors}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <ui:repeat var="result" value="#{AdministrationForm.administrationPlugin.restoreInfos}">
+                                    <tr>
+                                        <td>#{result.processId}</td>
+                                        <td>#{result.imagesToRestore}</td>
+                                        <td>#{result.imagesRestored}</td>
+                                        <td>#{result.errorMessage}</td>
+                                    </tr>
+                                </ui:repeat>
+                            </tbody>
+                        </table>
+                    </div>
+                </h:form>
+            </intranda:box>
 		</h:panelGroup>
-
         <o:socket channel="adminPluginPush" scope="session">
-            <f:ajax event="update" render="resultForm" />
+            <f:ajax event="update" render=":resultBox:resultForm" />
         </o:socket>
-
 	</composite:implementation>
 </ui:composition>
