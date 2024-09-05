@@ -128,7 +128,8 @@ public class RestorearchivedimagefoldersAdministrationPlugin implements IAdminis
     private void downloadWithS3(RestoreFolderInformation info, Path archiveInformationFile, Instant lastPush, XMLConfiguration xmlConf)
             throws IOException {
         try (S3ClientHelper s3client =
-                new S3ClientHelper(xmlConf.getString("S3Endpoint"), xmlConf.getString("S3AccessKeyID"), xmlConf.getString("S3SecretAccessKey"))) {
+                new S3ClientHelper(xmlConf.getString("S3Endpoint"), xmlConf.getString("S3AccessKeyID"), xmlConf.getString("S3SecretAccessKey"),
+                        true)) {
             String bucket = xmlConf.getString("S3Bucket");
             String prefix = xmlConf.getString("S3Prefix", "");
             if (StringUtils.isNotBlank(prefix)) {
