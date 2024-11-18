@@ -8,7 +8,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.configuration.ConfigurationException;
@@ -78,8 +77,8 @@ public class RestorearchivedimagefoldersAdministrationPlugin implements IAdminis
         List<Integer> tempProcesses = ProcessManager.getIdsForFilter(query);
 
         restoreInfos = tempProcesses.stream()
-                .map(id -> new RestoreFolderInformation(id))
-                .collect(Collectors.toList());
+                .map(RestoreFolderInformation::new)
+                .toList();
         for (RestoreFolderInformation restoreInfo : restoreInfos) {
             List<Path> archiveInformationFiles = getArchiveInformationFilesForProcess(restoreInfo.getProcessId());
             int numberOfImages = 0;
@@ -146,7 +145,7 @@ public class RestorearchivedimagefoldersAdministrationPlugin implements IAdminis
             Path localPath = Paths.get(ConfigurationHelper.getInstance().getGoobiFolder(), "metadata").resolve(remotePath);
             Files.createDirectories(localPath);
 
-            List<String> remoteFiles = s3client.getContentList(bucket, s3prefix);
+            List<String> remoteFiles = s3client.restoreFromGlacier(bucket, s3prefix, 2);
 
             for (String remoteFile : remoteFiles) {
                 s3client.downloadSingleFile(bucket, s3prefix, Paths.get(remoteFile).getFileName().toString(), localPath);
@@ -212,8 +211,7 @@ public class RestorearchivedimagefoldersAdministrationPlugin implements IAdminis
     private List<Path> getArchiveInformationFilesForProcess(Integer processId) {
         Path imagesPath = Paths.get(ConfigurationHelper.getInstance().getGoobiFolder(), "metadata", processId.toString(), "images");
         try (Stream<Path> fileStream = Files.list(imagesPath)) {
-            return fileStream.filter(p -> Files.isRegularFile(p) && p.getFileName().toString().endsWith(".xml"))
-                    .collect(Collectors.toList());
+            return fileStream.filter(p -> Files.isRegularFile(p) && p.getFileName().toString().endsWith(".xml")).toList();
         } catch (IOException e) {
             log.error(e);
             return new ArrayList<>();
