@@ -4,6 +4,7 @@ identifier: intranda_administration_restorearchivedimagefolders
 description: Goobi Administration Plugin for restoring image folders from external storage
 published: true
 keywords:
+    - Goobi workflow
     - Plugin
     - Administration Plugin
     - Restore
