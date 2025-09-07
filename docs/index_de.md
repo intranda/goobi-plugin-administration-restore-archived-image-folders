@@ -5,7 +5,7 @@ description: Goobi Administration Plugin für die Wiederherstellung von Bildordn
 published: true
 keywords:
     - Plugin
-    - Administration
+    - Administration Plugin
     - Wiederherstellung
     - Backup
 ---

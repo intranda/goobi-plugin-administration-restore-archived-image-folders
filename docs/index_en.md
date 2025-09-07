@@ -5,7 +5,7 @@ description: Goobi Administration Plugin for restoring image folders from extern
 published: true
 keywords:
     - Plugin
-    - Administration
+    - Administration Plugin
     - Restore
     - Backup
 ---
