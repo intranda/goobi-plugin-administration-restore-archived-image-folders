@@ -3,6 +3,12 @@ title: Restoring archived image folders
 identifier: intranda_administration_restorearchivedimagefolders
 description: Goobi Administration Plugin for restoring image folders from external storage
 published: true
+keywords:
+    - Goobi workflow
+    - Plugin
+    - Administration Plugin
+    - Restore
+    - Backup
 ---
 ## Introduction
 This plugin for Goobi workflow restores image folders that were previously archived with the plugin `goobi-plugin-step-archiveimagefolder`.
