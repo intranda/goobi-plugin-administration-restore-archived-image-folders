@@ -7,8 +7,6 @@ keywords:
     - Goobi workflow
     - Plugin
     - Administration Plugin
-    - Wiederherstellung
-    - Backup
 ---
 ## Einführung
 Dieses Plugin für Goobi workflow stellt Bildordner wieder her, die zuvor mit dem Plugin `goobi-plugin-step-archiveimagefolder` archiviert wurden.
