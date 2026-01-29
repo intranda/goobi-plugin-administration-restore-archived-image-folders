@@ -7,7 +7,8 @@
 	xmlns:intranda="http://xmlns.jcp.org/jsf/composite/composites"
 	xmlns:pt="http://xmlns.jcp.org/jsf/passthrough"
 	xmlns:p="http://primefaces.org/ui"
-    xmlns:jsf="http://xmlns.jcp.org/jsf">
+    xmlns:jsf="http://xmlns.jcp.org/jsf"
+    xmlns:util="http://goobi.io/util">
 	<composite:interface>
 	</composite:interface>
 	<composite:implementation>
@@ -24,7 +25,7 @@
                 boxType="action"
                 boxPadding="false"
                 boxForm="true"
-                icon="fa fa-plug"
+                icon="plug"
                 title="#{msgs[AdministrationForm.administrationPlugin.title]}"
                 rendered="#{LoginForm.hasRole('Plugin_administration_restorearchivedimagefolders')}">
                 <h:panelGroup id="actionform">
@@ -59,7 +60,7 @@
                 boxType="neutral"
                 boxPadding="false"
                 boxForm="true"
-                icon="fa fa-table"
+                icon="table"
                 id="resultBox"
                 rendered="#{AdministrationForm.administrationPlugin.restoreInfos.size() gt 0}"
                 title="#{msgs.results}">
